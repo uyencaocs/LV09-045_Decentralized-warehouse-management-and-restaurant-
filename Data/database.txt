@@ -1,0 +1,227 @@
+CREATE DATABASE QuanLyKhoNhaHang;
+GO
+
+
+USE QuanLyKhoNhaHang;
+GO
+
+CREATE TABLE ViTri (
+    MaViTri INT IDENTITY(1,1) PRIMARY KEY,
+    TenViTri NVARCHAR(100) NOT NULL,
+    HanMucPheDuyet DECIMAL(18,2) DEFAULT 0,
+    TrangThai BIT NOT NULL DEFAULT 1
+);
+
+CREATE TABLE NguoiDung (
+    MaNguoiDung INT IDENTITY(1,1) PRIMARY KEY,
+    TenDangNhap VARCHAR(50) NOT NULL UNIQUE,
+    MatKhau VARCHAR(255) NOT NULL,
+    HoTen NVARCHAR(100) NOT NULL,
+    MaViTri INT NOT NULL,
+    TrangThai BIT NOT NULL DEFAULT 1,
+    FOREIGN KEY (MaViTri) REFERENCES ViTri(MaViTri)
+);
+
+CREATE TABLE Kho (
+    MaKho INT IDENTITY(1,1) PRIMARY KEY,
+    TenKho NVARCHAR(100) NOT NULL,
+    ViTriKho NVARCHAR(200)
+);
+
+CREATE TABLE DanhMucHangHoa (
+    MaDanhMuc INT IDENTITY(1,1) PRIMARY KEY,
+    TenDanhMuc NVARCHAR(100) NOT NULL
+);
+
+CREATE TABLE HangHoa (
+    MaHangHoa INT IDENTITY(1,1) PRIMARY KEY,
+    MaSKU VARCHAR(50) NOT NULL UNIQUE,
+    TenHangHoa NVARCHAR(200) NOT NULL,
+    MaDanhMuc INT NOT NULL,
+    DonViTinh NVARCHAR(50) NOT NULL,
+    TonToiThieu DECIMAL(18,2) NOT NULL DEFAULT 0,
+    FOREIGN KEY (MaDanhMuc) REFERENCES DanhMucHangHoa(MaDanhMuc)
+);
+
+CREATE TABLE NhaCungCap (
+    MaNhaCungCap INT IDENTITY(1,1) PRIMARY KEY,
+    TenNhaCungCap NVARCHAR(200) NOT NULL,
+    SoDienThoai VARCHAR(20) NOT NULL,
+    MaSoThue VARCHAR(50) NOT NULL,
+    DiaChi NVARCHAR(255) NOT NULL -- Bổ sung theo yêu cầu
+);
+
+CREATE TABLE NhatKyHeThong (
+    MaNhatKy INT IDENTITY(1,1) PRIMARY KEY,
+    MaNguoiDung INT NOT NULL,
+    HanhDong NVARCHAR(255) NOT NULL,
+    BangTacDong VARCHAR(100) NOT NULL,
+    ThoiGian DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (MaNguoiDung) REFERENCES NguoiDung(MaNguoiDung)
+);
+
+CREATE TABLE KiemKeKho (
+    MaKiemKe INT IDENTITY(1,1) PRIMARY KEY,
+    MaKho INT NOT NULL,
+    MaNguoiKiem INT NOT NULL,
+    TrangThai NVARCHAR(50) NOT NULL,
+    FOREIGN KEY (MaKho) REFERENCES Kho(MaKho),
+    FOREIGN KEY (MaNguoiKiem) REFERENCES NguoiDung(MaNguoiDung)
+);
+
+CREATE TABLE DonMuaHang (
+    MaDonMuaHang INT IDENTITY(1,1) PRIMARY KEY,
+    MaSoPO VARCHAR(50) NOT NULL UNIQUE,
+    MaNhaCungCap INT NOT NULL,
+    NguoiTao INT NOT NULL,
+    NguoiDuyet INT NULL,
+    TrangThai NVARCHAR(50) NOT NULL,
+    TongTien DECIMAL(18,2) NOT NULL DEFAULT 0,
+    FOREIGN KEY (MaNhaCungCap) REFERENCES NhaCungCap(MaNhaCungCap),
+    FOREIGN KEY (NguoiTao) REFERENCES NguoiDung(MaNguoiDung),
+    FOREIGN KEY (NguoiDuyet) REFERENCES NguoiDung(MaNguoiDung)
+);
+
+CREATE TABLE GiaoDichKho (
+    MaGiaoDich INT IDENTITY(1,1) PRIMARY KEY,
+    MaSoPhieu VARCHAR(50) NOT NULL UNIQUE,
+    LoaiGiaoDich NVARCHAR(50) NOT NULL,
+    MaKho INT NOT NULL,
+    MaKhoDich INT NULL,
+    MaDonMuaHang INT NULL,
+    NguoiTao INT NOT NULL,
+    TrangThai NVARCHAR(50) NOT NULL,
+    TongGiaTri DECIMAL(18,2) NOT NULL DEFAULT 0,
+    FOREIGN KEY (MaKho) REFERENCES Kho(MaKho),
+    FOREIGN KEY (MaKhoDich) REFERENCES Kho(MaKho),
+    FOREIGN KEY (MaDonMuaHang) REFERENCES DonMuaHang(MaDonMuaHang),
+    FOREIGN KEY (NguoiTao) REFERENCES NguoiDung(MaNguoiDung)
+);
+
+CREATE TABLE YeuCauDuyet (
+    MaYeuCau INT IDENTITY(1,1) PRIMARY KEY,
+    MaGiaoDich INT NOT NULL,
+    NguoiYeuCau INT NOT NULL,
+    NguoiDuyet INT NULL,
+    GiaTriYeuCau DECIMAL(18,2) NOT NULL,
+    TrangThai NVARCHAR(50) NOT NULL,
+    FOREIGN KEY (MaGiaoDich) REFERENCES GiaoDichKho(MaGiaoDich),
+    FOREIGN KEY (NguoiYeuCau) REFERENCES NguoiDung(MaNguoiDung),
+    FOREIGN KEY (NguoiDuyet) REFERENCES NguoiDung(MaNguoiDung)
+);
+
+CREATE TABLE LoHang (
+    MaLo INT IDENTITY(1,1) PRIMARY KEY,
+    MaHangHoa INT NOT NULL,
+    MaKho INT NOT NULL,
+    SoLo VARCHAR(50) NOT NULL,
+    NgaySanXuat DATE,
+    HanSuDung DATE NOT NULL,
+    SoLuongTon DECIMAL(18,2) NOT NULL DEFAULT 0,
+    FOREIGN KEY (MaHangHoa) REFERENCES HangHoa(MaHangHoa),
+    FOREIGN KEY (MaKho) REFERENCES Kho(MaKho)
+);
+
+CREATE TABLE TonKhoTucThoi (
+    MaHangHoa INT NOT NULL,
+    MaKho INT NOT NULL,
+    SoLuongTon DECIMAL(18,2) NOT NULL DEFAULT 0,
+    NgayCapNhat DATETIME NOT NULL DEFAULT GETDATE(),
+    PRIMARY KEY (MaHangHoa, MaKho),
+    FOREIGN KEY (MaHangHoa) REFERENCES HangHoa(MaHangHoa),
+    FOREIGN KEY (MaKho) REFERENCES Kho(MaKho)
+);
+
+CREATE TABLE CTKiemKe (
+    MaCTKiemKe INT IDENTITY(1,1) PRIMARY KEY,
+    MaKiemKe INT NOT NULL,
+    MaHangHoa INT NOT NULL,
+    MaLo INT NULL,
+    SoLuongHeThong DECIMAL(18,2) NOT NULL,
+    SoLuongThucTe DECIMAL(18,2) NOT NULL,
+    ChenhLech DECIMAL(18,2) NOT NULL,
+    FOREIGN KEY (MaKiemKe) REFERENCES KiemKeKho(MaKiemKe),
+    FOREIGN KEY (MaHangHoa) REFERENCES HangHoa(MaHangHoa),
+    FOREIGN KEY (MaLo) REFERENCES LoHang(MaLo)
+);
+
+CREATE TABLE CTGiaoDichKho (
+    MaChiTiet INT IDENTITY(1,1) PRIMARY KEY,
+    MaGiaoDich INT NOT NULL,
+    MaHangHoa INT NOT NULL,
+    MaLo INT NULL,
+    SoLuong DECIMAL(18,2) NOT NULL,
+    DonGia DECIMAL(18,2) NOT NULL,
+    ThanhTien DECIMAL(18,2) NOT NULL,
+    FOREIGN KEY (MaGiaoDich) REFERENCES GiaoDichKho(MaGiaoDich),
+    FOREIGN KEY (MaHangHoa) REFERENCES HangHoa(MaHangHoa),
+    FOREIGN KEY (MaLo) REFERENCES LoHang(MaLo)
+);
+
+CREATE TABLE CTDonMuaHang (
+    MaChiTietPO INT IDENTITY(1,1) PRIMARY KEY,
+    MaDonMuaHang INT NOT NULL,
+    MaHangHoa INT NOT NULL,
+    SoLuongDat DECIMAL(18,2) NOT NULL,
+    DonGiaNhap DECIMAL(18,2) NOT NULL,
+    ThanhTien DECIMAL(18,2) NOT NULL,
+    FOREIGN KEY (MaDonMuaHang) REFERENCES DonMuaHang(MaDonMuaHang),
+    FOREIGN KEY (MaHangHoa) REFERENCES HangHoa(MaHangHoa)
+);
+
+
+-- Vị trí & Người dùng 
+INSERT INTO ViTri (TenViTri, HanMucPheDuyet, TrangThai) VALUES 
+(N'Admin', 999999999, 1),
+(N'Quản lý', 50000000, 1),
+(N'Bếp trưởng', 10000000, 1),
+(N'Nhân viên kho', 0, 1);
+
+INSERT INTO NguoiDung (TenDangNhap, MatKhau, HoTen, MaViTri, TrangThai) VALUES 
+('admin_duy', 'hashed_pwd_123', N'Cao Thị Thu Uyên', 1, 1),
+('quanly_lan', 'hashed_pwd_123', N'Phan Ngọc Quỳnh Hương', 2, 1),
+('beptruong_hung', 'hashed_pwd_123', N'Nguyễn Thành Trung', 3, 1),
+('nvkho_tuan', 'hashed_pwd_123', N'Nguyễn Trường Duy', 4, 1);
+
+-- Kho 
+INSERT INTO Kho (TenKho, ViTriKho) VALUES 
+(N'Kho mát', N'Khu vực Tầng 1 - Cánh Trái'),
+(N'Kho đông', N'Khu vực Tầng 1 - Cánh Phải'),
+(N'Kho đồ khô', N'Khu vực Tầng 2');
+
+--  Nhà cung cấp 
+INSERT INTO NhaCungCap (TenNhaCungCap, SoDienThoai, MaSoThue, DiaChi) VALUES 
+(N'Công ty Thực phẩm Sạch Vina', '0901234567', '0312345678', N'123 Nguyễn Văn Linh, Quận 7, TP.HCM'),
+(N'Hợp tác xã Nông nghiệp Xanh', '0912345678', '0323456789', N'45 Quốc lộ 1A, Bình Chánh, TP.HCM'),
+(N'Đại lý Hải sản Biển Đông', '0923456789', '0334567890', N'78 Tôn Thất Thuyết, Quận 4, TP.HCM'),
+(N'Nhà phân phối Gia vị ABC', '0934567890', '0345678901', N'90 Lê Trọng Tấn, Tân Phú, TP.HCM'),
+(N'Công ty Cổ phần Nông sản Việt', '0945678901', '0356789012', N'15 Khu Công Nghiệp Sóng Thần, Dĩ An, Bình Dương');
+
+-- Seed: Danh mục hàng hóa (3 Nhóm)
+INSERT INTO DanhMucHangHoa (TenDanhMuc) VALUES 
+(N'Rau củ'), 
+(N'Thịt cá'), 
+(N'Đồ khô/Gia vị');
+
+--  Hàng hóa 
+INSERT INTO HangHoa (MaSKU, TenHangHoa, MaDanhMuc, DonViTinh, TonToiThieu) VALUES 
+('RC_CAROT_01', N'Cà rốt Đà Lạt', 1, N'Kg', 10),
+('RC_CAITHAO_01', N'Cải thảo', 1, N'Kg', 15),
+('RC_HANHTAY_01', N'Hành tây', 1, N'Kg', 5),
+('RC_TOI_01', N'Tỏi Lý Sơn', 1, N'Kg', 2),
+('RC_OTCHUONG_01', N'Ớt chuông đỏ', 1, N'Kg', 3),
+('RC_KHOAITAY_01', N'Khoai tây vàng', 1, N'Kg', 20),
+('RC_CACHUA_01', N'Cà chua cherry', 1, N'Kg', 5),
+('TC_BOBITTET_01', N'Thịt bò bít tết nhập khẩu', 2, N'Kg', 10),
+('TC_HEOBACHI_01', N'Thịt heo ba chỉ', 2, N'Kg', 15),
+('TC_GATA_01', N'Thịt gà ta nguyên con', 2, N'Con', 10),
+('TC_CAHOI_01', N'Cá hồi Na Uy phi lê', 2, N'Kg', 5),
+('TC_CACHEM_01', N'Cá chẽm tươi', 2, N'Kg', 5),
+('TC_MUCONG_01', N'Mực ống Phan Thiết', 2, N'Kg', 8),
+('TC_TOMSU_01', N'Tôm sú loại 1', 2, N'Kg', 10),
+('DK_GAOTE_01', N'Gạo tẻ ST25', 3, N'Bao 10Kg', 5),
+('DK_NUOCMAM_01', N'Nước mắm truyền thống', 3, N'Chai 1L', 10),
+('DK_HATNEM_01', N'Hạt nêm thịt thăn', 3, N'Gói 2Kg', 10),
+('DK_DUONGCAT_01', N'Đường cát trắng', 3, N'Kg', 20),
+('DK_MUOI_01', N'Muối tinh I-ốt', 3, N'Kg', 15),
+('DK_DAUAN_01', N'Dầu ăn đậu nành', 3, N'Can 5L', 5);
