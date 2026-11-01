@@ -170,18 +170,17 @@ class FefoExportDialog {
                 Navigator.pop(ctx);
 
                 // Gọi API backend FEFO
-                await ApiService.xuatKhoFEFO(
+                final response = await ApiService.xuatKhoFEFO(
                   maHangHoa: 1,
-                  maKhoXuat: selectedSource == 'Kho mát' ? 1 : 2,
+                  maKhoXuat: selectedSource == 'Kho mát' ? 1 : selectedSource == 'Kho đông' ? 2 : 3,
                   soLuongXuat: qty,
-                  ghiChu: noteController.text,
                 );
 
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Xuất kho thành công $qty đơn vị "$selectedItem" theo FEFO!'),
-                      backgroundColor: AppColors.success,
+                      content: Text(response.message),
+                      backgroundColor: response.success ? AppColors.success : AppColors.danger,
                     ),
                   );
                 }

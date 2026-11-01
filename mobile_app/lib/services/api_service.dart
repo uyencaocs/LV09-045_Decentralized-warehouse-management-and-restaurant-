@@ -48,15 +48,17 @@ class ApiService {
     required int maHangHoa,
     required int maKhoXuat,
     required double soLuongXuat,
-    String? ghiChu,
   }) async {
     try {
       final headers = await _getHeaders();
       final body = jsonEncode({
-        'MaHangHoa': maHangHoa,
-        'MaKhoXuat': maKhoXuat,
-        'SoLuongXuat': soLuongXuat,
-        'GhiChu': ghiChu ?? 'Xuất kho phục vụ Bếp chính (FEFO)',
+        'MaKho': maKhoXuat,
+        'ChiTiets': [
+          {
+            'MaHangHoa': maHangHoa,
+            'SoLuongXuat': soLuongXuat,
+          }
+        ],
       });
 
       final res = await http.post(
@@ -76,15 +78,13 @@ class ApiService {
     required int maDonMua,
     required int maKho,
     required List<Map<String, dynamic>> chiTiet,
-    String? ghiChu,
   }) async {
     try {
       final headers = await _getHeaders();
       final body = jsonEncode({
-        'MaDonMua': maDonMua,
+        'MaDonMuaHang': maDonMua,
         'MaKho': maKho,
-        'GhiChu': ghiChu ?? 'Nhập kho đối soát theo PO',
-        'ChiTiet': chiTiet,
+        'LoHangs': chiTiet,
       });
 
       final res = await http.post(
@@ -115,17 +115,13 @@ class ApiService {
 
   static Future<ApiResponse<dynamic>> createDonMuaHang({
     required int maNhaCungCap,
-    required DateTime ngayGiaoDuKien,
     required List<Map<String, dynamic>> chiTiet,
-    String? ghiChu,
   }) async {
     try {
       final headers = await _getHeaders();
       final body = jsonEncode({
         'MaNhaCungCap': maNhaCungCap,
-        'NgayGiaoDuKien': ngayGiaoDuKien.toIso8601String(),
-        'GhiChu': ghiChu,
-        'ChiTiet': chiTiet,
+        'ChiTiets': chiTiet,
       });
 
       final res = await http.post(
@@ -178,8 +174,7 @@ class ApiService {
       final headers = await _getHeaders();
       final body = jsonEncode({
         'MaKho': maKho,
-        'GhiChu': ghiChu ?? 'Kiểm kê định kỳ nhà hàng',
-        'ChiTiet': chiTiet,
+        'ChiTiets': chiTiet,
       });
 
       final res = await http.post(

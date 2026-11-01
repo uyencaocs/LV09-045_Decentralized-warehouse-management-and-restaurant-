@@ -160,17 +160,16 @@ class PoImportDialog {
               onPressed: () async {
                 Navigator.pop(ctx);
 
-                await ApiService.nhapKhoPO(
+                final response = await ApiService.nhapKhoPO(
                   maDonMua: 1,
-                  maKho: selectedKho == 'Kho mát' ? 1 : 2,
+                  maKho: selectedKho == 'Kho mát' ? 1 : selectedKho == 'Kho đông' ? 2 : 3,
                   chiTiet: [
                     {
                       'MaHangHoa': 1,
-                      'SoLuongThucNhan': double.tryParse(qtyController.text) ?? 10.0,
+                      'SoLuongNhan': double.tryParse(qtyController.text) ?? 10.0,
                       'DonGia': 250000,
                       'SoLo': lotController.text,
                       'HanSuDung': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
-                      'NhietDoBaoQuan': tempController.text,
                     }
                   ],
                 );
@@ -178,8 +177,8 @@ class PoImportDialog {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Đã đối soát và nhập kho thành công từ đơn $selectedPO!'),
-                      backgroundColor: AppColors.success,
+                      content: Text(response.message),
+                      backgroundColor: response.success ? AppColors.success : AppColors.danger,
                     ),
                   );
                 }

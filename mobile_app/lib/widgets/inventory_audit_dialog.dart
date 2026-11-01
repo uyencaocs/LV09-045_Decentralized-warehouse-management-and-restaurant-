@@ -39,7 +39,7 @@ class InventoryAuditDialog {
                     child: DropdownButton<String>(
                       isExpanded: true,
                       value: selectedKho,
-                      items: ['Kho mát', 'Kho đông', 'Kho khô', 'Bếp chính'].map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 13)))).toList(),
+                      items: ['Kho mát', 'Kho đông', 'Kho khô'].map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 13)))).toList(),
                       onChanged: (val) {
                         if (val != null) setState(() => selectedKho = val);
                       },
@@ -126,20 +126,20 @@ class InventoryAuditDialog {
               onPressed: () async {
                 Navigator.pop(ctx);
 
-                await ApiService.createKiemKe(
-                  maKho: selectedKho == 'Kho mát' ? 1 : 2,
+                final response = await ApiService.createKiemKe(
+                  maKho: selectedKho == 'Kho mát' ? 1 : selectedKho == 'Kho đông' ? 2 : 3,
                   chiTiet: [
-                    {'MaHangHoa': 1, 'SoLuongThucTe': 3.5, 'LyDoChenhLech': 'Hao hụt rã đông'},
-                    {'MaHangHoa': 2, 'SoLuongThucTe': 18.0, 'LyDoChenhLech': 'Khớp tồn'},
-                    {'MaHangHoa': 3, 'SoLuongThucTe': 7.0, 'LyDoChenhLech': 'Thừa do chưa ghi nhận xuất'},
+                    {'MaHangHoa': 1, 'SoLuongThucTe': 3.5},
+                    {'MaHangHoa': 2, 'SoLuongThucTe': 18.0},
+                    {'MaHangHoa': 3, 'SoLuongThucTe': 7.0},
                   ],
                 );
 
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Đã lập thành công Biên bản kiểm kê kho $selectedKho và gửi Quản lý phê duyệt!'),
-                      backgroundColor: AppColors.success,
+                      content: Text(response.message),
+                      backgroundColor: response.success ? AppColors.success : AppColors.danger,
                     ),
                   );
                 }
